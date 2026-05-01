@@ -43,8 +43,7 @@ sentinel_portal
 ├── app.py                 # Application entry point & login
 ├── db.py                  # Database connection & backend logic
 ├── db_setup.sql           # Database schema & security setup
-├── styles.py              # UI/UX, CSS, and styling components
-└── README.md              # Project documentation
+└── styles.py              # UI/UX, CSS, and styling components
 ```
 
 ## ⚙️ Setup Instructions
