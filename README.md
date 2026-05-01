@@ -33,6 +33,7 @@ Before running the application, ensure you have the following installed:
 3. **Python 3.x**: Recommended version 3.9 or higher.
 
 ## 📂 Project Structure
+```text
 .
 ├── .streamlit/            # Configuration folder
 ├── pages/                 # Streamlit multi-page application
@@ -44,6 +45,7 @@ Before running the application, ensure you have the following installed:
 ├── db_setup.sql           # Database schema & security setup
 ├── styles.py              # UI/UX, CSS, and styling components
 └── README.md              # Project documentation
+```
 
 ## ⚙️ Setup Instructions
 
