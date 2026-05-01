@@ -34,7 +34,7 @@ Before running the application, ensure you have the following installed:
 
 ## 📂 Project Structure
 ```text
-.
+sentinel_portal
 ├── .streamlit/            # Configuration folder
 ├── pages/                 # Streamlit multi-page application
 │   ├── Admin.py           # Admin panel & user management
@@ -43,8 +43,7 @@ Before running the application, ensure you have the following installed:
 ├── app.py                 # Application entry point & login
 ├── db.py                  # Database connection & backend logic
 ├── db_setup.sql           # Database schema & security setup
-├── styles.py              # UI/UX, CSS, and styling components
-└── README.md              # Project documentation
+└── styles.py              # UI/UX, CSS, and styling components
 ```
 
 ## ⚙️ Setup Instructions
