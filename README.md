@@ -14,7 +14,7 @@ Sentinel Incident Portal is an enterprise-grade incident management system desig
 ## 🔒 Security Architecture
 The application is built with a **_Security-by-Design_** philosophy:
 - **Encryption**: Incident details are encrypted using AES-256 via SentinelSymKey. The application requires proper privileges to perform decryption.
-- **Database Security**: The SQL script enforces the principle of least privilege, explicitly denying permissions (e.g., DENY DELETE to Analysts) via RBAC.
+- **Database Security**: The SQL script enforces the principle of least privilege, explicitly denying permissions (e.g., `DENY` `DELETE` to Analysts) via RBAC.
 - **Auditability**: Every transaction is written to the AUDIT_LOGS table, creating an immutable trail for forensic analysis.
 
 ## 🛠️ Technology Stack
