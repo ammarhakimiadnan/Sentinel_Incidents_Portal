@@ -34,7 +34,7 @@ Before running the application, ensure you have the following installed:
 
 ## 📂 Project Structure
 ```text
-Sentinel_Portal
+sentinel_portal
 ├── .streamlit/            # Configuration folder
 ├── pages/                 # Streamlit multi-page application
 │   ├── Admin.py           # Admin panel & user management
