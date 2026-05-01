@@ -13,9 +13,9 @@ Sentinel Incident Portal is an enterprise-grade incident management system desig
 
 ## 🔒 Security Architecture
 The application is built with a **_Security-by-Design_** philosophy:
-- **Encryption**: Incident details are encrypted using AES-256 via SentinelSymKey. The application requires proper privileges to perform decryption.
+- **Encryption**: Incident details are encrypted using AES-256 via `SentinelSymKey`. The application requires proper privileges to perform decryption.
 - **Database Security**: The SQL script enforces the principle of least privilege, explicitly denying permissions (e.g., `DENY` `DELETE` to Analysts) via RBAC.
-- **Auditability**: Every transaction is written to the AUDIT_LOGS table, creating an immutable trail for forensic analysis.
+- **Auditability**: Every transaction is written to the `AUDIT_LOGS` table, creating an immutable trail for forensic analysis.
 
 ## 🛠️ Technology Stack
 
@@ -31,6 +31,19 @@ Before running the application, ensure you have the following installed:
 1. **SQL Server**: Ensure an instance is running and mixed-mode authentication is enabled.
 2. **ODBC Driver**: Install "ODBC Driver 17 for SQL Server".
 3. **Python 3.x**: Recommended version 3.9 or higher.
+
+## 📂 Project Structure
+.
+├── .streamlit/            # Configuration folder
+├── pages/                 # Streamlit multi-page application
+│   ├── Admin.py           # Admin panel & user management
+│   ├── Audit_Logs.py      # System audit trail & monitoring
+│   └── Incidents.py       # Main incident tracking dashboard
+├── app.py                 # Application entry point & login
+├── db.py                  # Database connection & backend logic
+├── db_setup.sql           # Database schema & security setup
+├── styles.py              # UI/UX, CSS, and styling components
+└── README.md              # Project documentation
 
 ## ⚙️ Setup Instructions
 
