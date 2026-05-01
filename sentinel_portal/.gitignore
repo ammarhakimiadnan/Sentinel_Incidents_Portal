@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+.env
+
+# Streamlit
+.streamlit/
+
+# Database/Environment
+*.db
+*.log
+.DS_Store
