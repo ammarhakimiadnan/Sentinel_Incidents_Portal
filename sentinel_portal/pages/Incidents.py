@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from db import (get_connection, get_incidents, get_active_incident_ids,
                 get_resolved_incident_ids, insert_incident,
-                resolve_incident, delete_incident)
+                resolve_incident, delete_incident, get_incidents_over_time)
 from styles import load_css, show_sidebar_user
 
 if 'logged_in' not in st.session_state or not st.session_state['logged_in']:
@@ -16,7 +16,7 @@ show_sidebar_user()
 st.markdown("# 🚨 Incident Dashboard")
 st.divider()
 
-# Metrics
+# ── Metrics Row ──
 conn = get_connection()
 cursor = conn.cursor()
 cursor.execute("SELECT Severity FROM INCIDENTS WHERE Status = 'Active'")
@@ -45,7 +45,7 @@ for col, val, label, color in [
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Action buttons
+# ── Action Buttons ──
 role = st.session_state['role']
 btn_cols = st.columns([1, 1, 1, 3])
 
@@ -160,57 +160,164 @@ if st.session_state.get('show_modal') == 'delete':
 
 st.divider()
 
-# Chart + Incident list
-left, right = st.columns([1, 2])
+# ── Full Width: Line Chart ──
+st.markdown('<div class="section-header">📈 Incidents Over Time</div>',
+            unsafe_allow_html=True)
 
-with left:
-    st.markdown('<div class="section-header">📊 Severity Breakdown</div>',
-                unsafe_allow_html=True)
-    if all_severities:
-        chart_data = pd.DataFrame({
-            "Severity": ["Critical", "High", "Medium", "Low"],
-            "Count":    [critical,   high,   medium,   low]
-        })
-        st.bar_chart(chart_data.set_index("Severity"), color="#00B4D8")
+time_data = get_incidents_over_time()
 
-with right:
-    st.markdown('<div class="section-header">📋 Incident Records</div>',
-                unsafe_allow_html=True)
-    can_decrypt = role in ['Admin', 'Analyst']
-    show_decrypted = (st.toggle("🔓 Show Decrypted Details", value=False)
-                      if can_decrypt else False)
-    if not can_decrypt:
-        st.caption("🔒 Details are encrypted. Contact Admin for access.")
+if time_data:
+    dates  = [str(row[0]) for row in time_data]
+    types  = [row[1] for row in time_data]
+    counts = [row[2] for row in time_data]
 
-    tab1, tab2 = st.tabs(["🔴 Active", "✅ Resolved"])
+    df = pd.DataFrame({
+        'Date':  pd.to_datetime(dates),
+        'Type':  types,
+        'Count': counts
+    })
 
-    def render_incidents(rows, resolved=False):
-        if rows:
-            for row in rows:
-                color = {"Critical": "#FF4444", "High": "#FF8800",
-                         "Medium":   "#FFD700", "Low":  "#00CC66"
-                         }.get(row[2], "#888")
-                badge = (f"<b style='color:#00CC66;'>✅ RESOLVED</b>"
-                         if resolved
-                         else f"<b style='color:{color};'>[{row[2]}]</b>")
-                border_color = "#00CC66" if resolved else color
-                st.markdown(f"""
-                <div style='background:#161B22; border:1px solid #30363D;
-                            border-left:3px solid {border_color};
-                            border-radius:8px; padding:0.75rem 1rem;
-                            margin-bottom:0.5rem;'>
-                    {badge} <b>#{row[0]} — {row[1]}</b><br>
-                    <span style='color:#8B949E; font-size:0.85rem;'>
-                        👤 {row[4]} &nbsp;|&nbsp; 🕒 {row[5]}
-                    </span><br>
-                    <span style='font-size:0.9rem;'>📝 {row[3]}</span>
-                </div>
-                """, unsafe_allow_html=True)
-        else:
-            st.info("No incidents found.")
+    df_pivot = df.pivot_table(
+        index='Date',
+        columns='Type',
+        values='Count',
+        aggfunc='sum'
+    ).fillna(0)
 
-    with tab1:
-        render_incidents(get_incidents(decrypt=show_decrypted, status='Active'))
-    with tab2:
-        render_incidents(get_incidents(decrypt=show_decrypted, status='Resolved'),
-                         resolved=True)
+    df_pivot.columns.name = None
+    df_pivot = df_pivot.reset_index().set_index('Date')
+
+    all_types = list(df_pivot.columns)
+    filter_col, _ = st.columns([2, 4])
+    with filter_col:
+        selected_types = st.multiselect(
+            "Filter by incident type",
+            options=all_types,
+            default=all_types,
+            label_visibility="collapsed"
+        )
+
+    if selected_types:
+        st.line_chart(
+            df_pivot[selected_types],
+            use_container_width=True,
+            height=250
+        )
+    else:
+        st.info("Select at least one incident type.")
+else:
+    st.info("No incident data available.")
+
+st.divider()
+
+# ── Middle: Severity Bar + Stat Cards ──
+st.markdown('<div class="section-header">📊 Severity Breakdown</div>',
+            unsafe_allow_html=True)
+
+scol1, scol2, scol3, scol4 = st.columns(4)
+
+conn2 = get_connection()
+cursor2 = conn2.cursor()
+cursor2.execute("""
+    SELECT
+        SUM(CASE WHEN Status='Active'   THEN 1 ELSE 0 END) AS Active,
+        SUM(CASE WHEN Status='Resolved' THEN 1 ELSE 0 END) AS Resolved,
+        COUNT(*) AS Total
+    FROM INCIDENTS
+""")
+totals = cursor2.fetchone()
+conn2.close()
+
+with scol1:
+    chart_data = pd.DataFrame({
+        "Severity": ["Critical", "High", "Medium", "Low"],
+        "Count":    [critical,   high,   medium,   low]
+    })
+    st.bar_chart(chart_data.set_index("Severity"),
+                 color="#00B4D8",
+                 use_container_width=True,
+                 height=200)
+
+with scol2:
+    st.markdown(f"""<div class='metric-card' style='margin-top:0.5rem;'>
+        <div class='metric-value' style='color:#00B4D8;'>{totals[2]}</div>
+        <div class='metric-label'>Total Incidents</div>
+    </div>""", unsafe_allow_html=True)
+    st.markdown(f"""<div class='metric-card'>
+        <div class='metric-value' style='color:#FF8800;'>{totals[0]}</div>
+        <div class='metric-label'>Active</div>
+    </div>""", unsafe_allow_html=True)
+
+with scol3:
+    st.markdown(f"""<div class='metric-card' style='margin-top:0.5rem;'>
+        <div class='metric-value' style='color:#00CC66;'>{totals[1]}</div>
+        <div class='metric-label'>Resolved</div>
+    </div>""", unsafe_allow_html=True)
+    st.markdown(f"""<div class='metric-card'>
+        <div class='metric-value' style='color:#FF4444;'>{critical}</div>
+        <div class='metric-label'>Critical Active</div>
+    </div>""", unsafe_allow_html=True)
+
+with scol4:
+    resolve_rate = round((totals[1] / totals[2]) * 100) if totals[2] > 0 else 0
+    st.markdown(f"""<div class='metric-card' style='margin-top:0.5rem;'>
+        <div class='metric-value' style='color:#A371F7;'>{resolve_rate}%</div>
+        <div class='metric-label'>Resolution Rate</div>
+    </div>""", unsafe_allow_html=True)
+    st.markdown(f"""<div class='metric-card'>
+        <div class='metric-value' style='color:#FFD700;'>{medium + low}</div>
+        <div class='metric-label'>Low/Medium Active</div>
+    </div>""", unsafe_allow_html=True)
+
+st.divider()
+
+# ── Bottom: Full Width Incident Records ──
+st.markdown('<div class="section-header">📋 Incident Records</div>',
+            unsafe_allow_html=True)
+
+can_decrypt = role in ['Admin', 'Analyst']
+show_decrypted = (st.toggle("🔓 Show Decrypted Details", value=False)
+                  if can_decrypt else False)
+if not can_decrypt:
+    st.caption("🔒 Details are encrypted. Contact Admin for access.")
+
+tab1, tab2 = st.tabs(["🔴 Active", "✅ Resolved"])
+
+def render_incidents(rows, resolved=False):
+    if rows:
+        col_a, col_b = st.columns(2)
+        for i, row in enumerate(rows):
+            color = {
+                "Critical": "#FF4444", "High": "#FF8800",
+                "Medium":   "#FFD700", "Low":  "#00CC66"
+            }.get(row[2], "#888")
+            badge = (f"<b style='color:#00CC66;'>✅ RESOLVED</b>"
+                     if resolved
+                     else f"<b style='color:{color};'>[{row[2]}]</b>")
+            border_color = "#00CC66" if resolved else color
+            card = f"""
+            <div style='background:#161B22; border:1px solid #30363D;
+                        border-left:3px solid {border_color};
+                        border-radius:8px; padding:0.75rem 1rem;
+                        margin-bottom:0.5rem;'>
+                {badge} <b>#{row[0]} — {row[1]}</b><br>
+                <span style='color:#8B949E; font-size:0.85rem;'>
+                    👤 {row[4]} &nbsp;|&nbsp; 🕒 {row[5]}
+                </span><br>
+                <span style='font-size:0.9rem;'>📝 {row[3]}</span>
+            </div>
+            """
+            if i % 2 == 0:
+                col_a.markdown(card, unsafe_allow_html=True)
+            else:
+                col_b.markdown(card, unsafe_allow_html=True)
+    else:
+        st.info("No incidents found.")
+
+with tab1:
+    render_incidents(
+        get_incidents(decrypt=show_decrypted, status='Active'))
+with tab2:
+    render_incidents(
+        get_incidents(decrypt=show_decrypted, status='Resolved'),
+        resolved=True)

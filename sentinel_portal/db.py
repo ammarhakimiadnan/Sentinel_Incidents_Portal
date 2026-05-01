@@ -39,6 +39,22 @@ def get_incidents(decrypt=False, status='Active'):
     conn.close()
     return rows
 
+def get_incidents_over_time():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT 
+            CAST(CreatedAt AS DATE) AS IncidentDate,
+            Type,
+            COUNT(*) AS Count
+        FROM INCIDENTS
+        GROUP BY CAST(CreatedAt AS DATE), Type
+        ORDER BY IncidentDate ASC
+    """)
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
+
 def get_active_incident_ids():
     conn = get_connection()
     cursor = conn.cursor()

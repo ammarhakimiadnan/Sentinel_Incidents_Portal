@@ -92,6 +92,29 @@ def show_sidebar_user():
         </div>
         """, unsafe_allow_html=True)
         st.markdown("---")
+
+        # Show masked user list to non-admins as proof of masking
+        if st.session_state['role'] != 'Admin':
+            from db import get_all_users
+            st.markdown("**👥 System Users**")
+            users = get_all_users(st.session_state['role'])
+            for u in users:
+                role_color = {
+                    "Admin": "#FF4444",
+                    "Analyst": "#00B4D8",
+                    "Viewer": "#8B949E"
+                }.get(u[2], "#888")
+                st.markdown(f"""
+                <div style='background:#161B22; border:1px solid #30363D;
+                            border-radius:6px; padding:6px 10px;
+                            margin-bottom:6px; font-size:0.8rem;'>
+                    <b style='color:{role_color};'>{u[1]}</b>
+                    [{u[2]}]<br>
+                    📞 <span style='color:#8B949E;'>{u[3]}</span>
+                </div>
+                """, unsafe_allow_html=True)
+            st.markdown("---")
+
         if st.button("🚪 Logout", use_container_width=True):
             st.session_state.clear()
             st.switch_page("app.py")
