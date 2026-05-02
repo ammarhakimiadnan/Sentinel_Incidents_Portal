@@ -5,7 +5,7 @@ from styles import load_css
 
 # Redirect to incidents if already logged in
 if st.session_state.get('logged_in'):
-    st.switch_page("pages/Incidents.py")
+    st.switch_page("pages/01_Incidents.py")
     
 st.set_page_config(
     page_title="Sentinel Incident Portal",
@@ -91,7 +91,7 @@ if submitted:
                 conn.close()
 
                 st.success(f"Welcome, {row[1]}!")
-                st.switch_page("pages/Incidents.py")
+                st.switch_page("pages/01_Incidents.py")
 
             else:
                 # ❌ Wrong password
