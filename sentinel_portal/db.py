@@ -1,4 +1,5 @@
 import pyodbc
+import re
 
 def get_connection():
     conn = pyodbc.connect(
@@ -6,6 +7,8 @@ def get_connection():
         "SERVER=localhost;"
         "DATABASE=SentinelDB;"
         "Trusted_Connection=yes;"
+        "Encrypt=yes;"
+        "TrustServerCertificate=yes;"
     )
     return conn
 
@@ -190,5 +193,39 @@ def update_user_role(user_id, role_id):
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("UPDATE USERS SET RoleID = ? WHERE UserID = ?", (role_id, user_id))
+    conn.commit()
+    conn.close()
+
+def sanitize_input(text):
+    if not text:
+        return text
+    # Remove HTML tags
+    text = re.sub(r'<[^>]+>', '', text)
+    # Remove script-like content
+    text = re.sub(r'(javascript:|on\w+=|<script)', '',
+                  text, flags=re.IGNORECASE)
+    # Strip leading/trailing whitespace
+    return text.strip()
+
+def insert_incident(inc_type, severity, details, user_id):
+    # Sanitize inputs before inserting
+    inc_type = sanitize_input(inc_type)
+    details  = sanitize_input(details)
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "OPEN SYMMETRIC KEY SentinelSymKey "
+        "DECRYPTION BY CERTIFICATE SentinelCert")
+    cursor.execute("""
+        INSERT INTO INCIDENTS
+            (Type, Severity, Details, DetailsEncrypted, ReporterID, Status)
+        VALUES (?, ?, ?, ENCRYPTBYKEY(KEY_GUID('SentinelSymKey'), ?), ?, 'Active')
+    """, (inc_type, severity, '***ENCRYPTED***', details, user_id))
+    cursor.execute("CLOSE SYMMETRIC KEY SentinelSymKey")
+    cursor.execute("""
+        INSERT INTO AUDIT_LOGS (UserID, ActionType, Status)
+        VALUES (?, 'INSERT_INCIDENT', 'Success')
+    """, (user_id,))
     conn.commit()
     conn.close()
