@@ -38,7 +38,7 @@ st.subheader("🔐 Secure Login")
 if st.session_state['locked_out']:
     st.error("🔒 Account locked — too many failed attempts. Contact your administrator.")
     st.markdown("---")
-    if st.button("🔓 Reset Lockout (Admin Demo)", use_container_width=True):
+    if st.button("🔓 Reset Lockout (Admin Demo)", width='stretch'):
         st.session_state['login_attempts'] = 0
         st.session_state['locked_out'] = False
         st.rerun()
@@ -56,7 +56,7 @@ with st.form("login_form", clear_on_submit=False):
     username = st.text_input("Username", placeholder="Enter your username")
     password = st.text_input("Password", type="password",
                              placeholder="Enter your password")
-    submitted = st.form_submit_button("Login", use_container_width=True)
+    submitted = st.form_submit_button("Login", width='stretch')
 
 if submitted:
     if username and password:

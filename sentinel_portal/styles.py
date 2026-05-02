@@ -115,6 +115,6 @@ def show_sidebar_user():
                 """, unsafe_allow_html=True)
             st.markdown("---")
 
-        if st.button("🚪 Logout", use_container_width=True):
+        if st.button("🚪 Logout", width='stretch'):
             st.session_state.clear()
-            st.switch_page("app.py")
+            st.switch_page("Login.py")

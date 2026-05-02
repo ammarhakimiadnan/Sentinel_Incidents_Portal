@@ -37,10 +37,10 @@ Before running the application, ensure you have the following installed:
 sentinel_portal
 ├── .streamlit/            # Configuration folder
 ├── pages/                 # Streamlit multi-page application
-│   ├── Admin.py           # Admin panel & user management
-│   ├── Audit_Logs.py      # System audit trail & monitoring
-│   └── Incidents.py       # Main incident tracking dashboard
-├── app.py                 # Application entry point & login
+│   ├── 01_Incidents.py       # Main incident tracking dashboard
+│   ├── 02_Admin.py           # Admin panel & user management
+│   └── 03_Audit_Logs.py      # System audit trail & monitoring
+├── Login.py                 # Application entry point & login
 ├── db.py                  # Database connection & backend logic
 ├── db_setup.sql           # Database schema & security setup
 └── styles.py              # UI/UX, CSS, and styling components
