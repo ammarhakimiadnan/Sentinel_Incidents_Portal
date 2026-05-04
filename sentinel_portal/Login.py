@@ -24,9 +24,11 @@ st.markdown("""
 # Initialise ONLY if key doesn't exist yet
 if 'login_attempts' not in st.session_state:
     st.session_state['login_attempts'] = 0
+# Track lockout separately to avoid issues with page reloads resetting attempts
 if 'locked_out' not in st.session_state:
     st.session_state['locked_out'] = False
 
+# Define maximum attempts before lockout
 MAX_ATTEMPTS = 5
 
 st.markdown('<div class="title-text">🛡️ SENTINEL</div>', unsafe_allow_html=True)
@@ -58,10 +60,12 @@ with st.form("login_form", clear_on_submit=False):
                              placeholder="Enter your password")
     submitted = st.form_submit_button("Login", width='stretch')
 
+# Handle login logic on submit
 if submitted:
     if username and password:
         conn = get_connection()
         cursor = conn.cursor()
+        # Fetch user info and password hash in one query to avoid multiple DB calls
         cursor.execute("""
             SELECT u.UserID, u.Username, r.RoleName, ul.PasswordHash
             FROM USERS u
@@ -73,6 +77,7 @@ if submitted:
 
         if row:
             stored_hash = row[3].encode('utf-8')
+            # Check password using bcrypt
             if bcrypt.checkpw(password.encode('utf-8'), stored_hash):
                 # ✅ Success — reset counter
                 st.session_state['login_attempts'] = 0
@@ -94,7 +99,7 @@ if submitted:
                 st.switch_page("pages/01_Incidents.py")
 
             else:
-                # ❌ Wrong password
+                # Wrong password
                 conn.close()
                 st.session_state['login_attempts'] += 1
 
