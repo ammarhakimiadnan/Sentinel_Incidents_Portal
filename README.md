@@ -217,7 +217,7 @@ sentinel_portal/
 
 ## 🔬 Security Testing
 
-A full security test suite is provided in `security_test.sql`. Run each test in SSMS and screenshot the results.
+A full security test suite is provided in `security_test.sql`. Run each test in SSMS.
 
 Tests covered:
 
