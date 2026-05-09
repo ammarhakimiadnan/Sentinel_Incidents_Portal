@@ -87,7 +87,7 @@ Before running the application, make sure you have all of the following installe
 ### Step 1 — Clone the repository
 
 ```bash
-git clone https://github.com/YOURUSERNAME/sentinel-incident-portal.git
+git clone https://github.com/ammarhakimiadnan/Sentinel_Incidents_Portal.git
 cd sentinel-incident-portal
 ```
 
