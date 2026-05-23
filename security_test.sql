@@ -1,6 +1,6 @@
 -- ============================================================
 -- Security Test Suite
--- Run each section individually and screenshot the results
+-- Run each section individually to verify specific security features
 -- ============================================================
 
 USE SentinelDB;
