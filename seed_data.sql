@@ -1,7 +1,6 @@
 -- ============================================================
 -- seed_data.sql
--- SentinelDB — Bulk Data Seeder
--- CCS6344 T2610 - Database & Cloud Security
+-- Bulk Data Seeder
 --
 -- This script:
 --   1. Clears all existing data (safe reset)
